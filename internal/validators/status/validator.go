@@ -206,7 +206,7 @@ func (sv *statusValidator) listGhaStatuses(ctx context.Context) ([]*ghaStatus, e
 		currentJobs[*s.Context] = struct{}{}
 
 		ghaStatuses = append(ghaStatuses, &ghaStatus{
-			Job:   *s.Context,
+			Job:   *s.Context + "-" + *s.NodeID,
 			State: *s.State,
 		})
 	}
@@ -226,7 +226,7 @@ func (sv *statusValidator) listGhaStatuses(ctx context.Context) ([]*ghaStatus, e
 		currentJobs[*run.Name] = struct{}{}
 
 		ghaStatus := &ghaStatus{
-			Job: *run.Name,
+			Job: *run.Name + "-" + *run.NodeID,
 		}
 
 		if *run.Status != checkRunCompletedStatus {
