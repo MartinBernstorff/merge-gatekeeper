@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/upsidr/merge-gatekeeper/internal/github"
 	"github.com/upsidr/merge-gatekeeper/internal/multierror"
@@ -200,13 +201,14 @@ func (sv *statusValidator) listGhaStatuses(ctx context.Context) ([]*ghaStatus, e
 		if s.Context == nil || s.State == nil {
 			return nil, fmt.Errorf("%w context: %v, status: %v", ErrInvalidCombinedStatusResponse, s.Context, s.State)
 		}
-		if _, ok := currentJobs[*s.Context]; ok {
+		var jobIdentifier string = *s.Context + "-" + strconv.FormatInt(*s.ID, 10)
+		if _, ok := currentJobs[jobIdentifier]; ok {
 			continue
 		}
-		currentJobs[*s.Context] = struct{}{}
+		currentJobs[jobIdentifier] = struct{}{}
 
 		ghaStatuses = append(ghaStatuses, &ghaStatus{
-			Job:   *s.Context + "-" + *s.NodeID,
+			Job:   jobIdentifier,
 			State: *s.State,
 		})
 	}
@@ -226,7 +228,7 @@ func (sv *statusValidator) listGhaStatuses(ctx context.Context) ([]*ghaStatus, e
 		currentJobs[*run.Name] = struct{}{}
 
 		ghaStatus := &ghaStatus{
-			Job: *run.Name + "-" + *run.NodeID,
+			Job: *run.Name + "-" + strconv.FormatInt(*run.ID, 10),
 		}
 
 		if *run.Status != checkRunCompletedStatus {
